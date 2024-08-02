@@ -1,0 +1,113 @@
+\section{Misspecification} 
+\begin{comment}
+  Plan: 
+  - Starting point: TV distance with $f$-divergence (bounds incomparable in general) 
+  - Closed form of optimal discriminator g 
+  - Algo (discriminator class induced by function class itself?) 
+  - Slow rate guarantee 
+  - Why Hellinger doesn't work    
+\end{comment}
+
+\subsection{Insufficiency of log loss}
+
+\subsection{Misspecification in Hellinger distance for deterministic experts} 
+% Lmax <= misspecification + error using Bernstein
+% Lmax <-> Hellinger 
+Is it possible to learn a policy where the error scales with misspecification in Hellinger distance? This is a natural goal to pursue since we care about outputting a policy that's close to $\pistar$ in Hellinger distance. Further, $\Dhels{P}{Q} \le \Dkl{P}{Q} \le \log(1+\Dchis{P}{Q})$, so this would be a strict improvement on the misspecification error under log loss.  
+
+For deterministic expert policies, this is possible with the $\Lmax$ loss, and it doesn't require known transitions. Here, the $\Lmax$ loss is equivalent to Hellinger distance up to a constant, and doesn't suffer from the same blow-up issues when a candidate policy is off-support relative to $\pistar$.    
+
+Recall that for a deterministic policy $\pistar$,
+\begin{align*}
+  \Lmax(\pi) = \En^{\pistar}\En_{a'_{1:H}\sim\pi(x_{1:H})}\sbr*{\bbI\sbr*{\exists h : a'_h \neq a_h}},
+\end{align*}
+and $\Lmaxhat$ is the empirical version. It can be observed that 
+\begin{align*}
+  \frac{1}{2}\Lmax(\pi) \le \Dhels{\bbP^\pi}{\bbP^{\pistar}} \le 2\Lmax(\pi). 
+\end{align*}
+
+
+\subsection{Stochastic experts, starting point: Scheffe with TV distance}
+Let $\cP = \{\bbP^\pi : \pi \in \Pi\}$. For any $P,Q \in \cP$, define the witness function 
+\begin{align*}
+  g_{P,Q} = \argmax_{|g| \le \frac{1}{2}}{} \En_P\sbr{g} - \En_Q\sbr{g}   
+\end{align*}
+and the set of discriminator functions as 
+\begin{align*}
+  \cG = \cbr*{g_{P,Q} : P,Q \in \cP, P \neq Q}.  
+\end{align*}
+Output the policy 
+\begin{align}
+  \label{eq:tv-objective}
+  \pihat = \argmin_{\pi\in\Pi}\max_{g\in\cG}{} \wh\En\sbr{g} - \En_{\bbP^\pi}\sbr{g}.  
+\end{align}
+
+\begin{proposition}
+  \label{prop:tv-misspecified}
+  The output of \cref{eq:tv-objective} satisfies  
+  \begin{align*}
+    \Dtv{\bbP^{\pistar}}{\bbP^{\pihat}} 
+    \le 
+    3\min_{\pi\in\Pi}\Dtv{\bbP^{\pistar}}{\bbP^\pi}
+    + 2\vepsstat, 
+  \end{align*}
+  where $\vepsstat \ldef{} \max_{g \in \cG} \abr*{\wh\En\sbr{g} - \En_{\pistar}\sbr{g}}$. 
+\end{proposition}
+
+\todo{comparison to hellinger bound; incomparable}
+
+\begin{proof}[\pfref{prop:tv-misspecified}]
+  Fix any $\bar\pi \in \Pi$. Using the triangle inequality, 
+  \begin{align*}
+    \Dtv{\bbP^{\pistar}}{\bbP^{\pihat}} 
+    \le 
+    \Dtv{\bbP^{\pistar}}{\bbP^{\pibar}} + \Dtv{\bbP^{\pibar}}{\bbP^{\pihat}}.
+  \end{align*}
+  Let $\wt{g} = g_{\bbP^{\pibar},\bbP^{\pihat}}$. By construction, $\wt{g} \in \cG$ so   
+  \begin{align*}
+    \Dtv{\bbP^{\pibar}}{\bbP^{\pihat}} 
+    =&~ \En_{\pibar}\sbr*{\wt{g}} - \En_{\pihat}\sbr*{\wt{g}}
+    \\
+    =&~ \En_{\pibar}\sbr*{\wt{g}} - \wh\En\sbr*{\wt{g}} 
+    + \wh\En\sbr*{\wt{g}} - \En_{\pihat}\sbr*{\wt{g}}
+    \\
+    \le&~ \En_{\pibar}\sbr*{\wt{g}} - \wh\En\sbr*{\wt{g}} 
+    + \max_{g \in \cG}{} \cbr*{\wh\En\sbr*{\wt{g}} - \En_{\pihat}\sbr*{\wt{g}}}
+    \\
+    \le&~ \En_{\pibar}\sbr*{\wt{g}} - \wh\En\sbr*{\wt{g}} 
+    + \max_{g \in \cG}{}\cbr*{\wh\En\sbr*{\wt{g}} - \En_{\pibar}\sbr*{\wt{g}}},
+  \end{align*}
+  since $\pihat = \argmin_{\pi\in\Pi} \max_{g\in\cG}\cbr*{\wh\En\sbr*{\wt{g}} - \En_{\pi}\sbr*{\wt{g}}}$. 
+  Next, define $\vepsstat = \max_{g \in \cG} \abr*{\wh\En\sbr{g} - \En_{\pistar}\sbr{g}}$. Letting $\bar{g} = \max_{g \in \cG}\wh\En\sbr*{g} - \En_{\pibar}\sbr*{g}$, we have 
+  \begin{align*}
+    \Dtv{\bbP^{\pibar}}{\bbP^{\pihat}} 
+    \le&~
+    \En_{\pibar}\sbr*{\wt{g}} - \wh\En\sbr*{\wt{g}}
+    + \wh\En\sbr*{\bar{g}} - \En_{\pibar}\sbr*{\bar{g}}
+    \\
+    \le&~ \En_{\pibar}\sbr*{\wt{g}} - \En_{\pistar}\sbr*{\wt{g}}
+    + \En_{\pistar}\sbr*{\bar{g}} - \En_{\pibar}\sbr*{\bar{g}}
+    + 2\vepsstat 
+    \\
+    \le&~ 2 \sup_{\abr{g} \le \frac{1}{2}}{} \cbr*{\En_{\pibar}\sbr*{g} - \En_{\pistar}\sbr*{g}}
+    + 2\vepsstat 
+    \\
+    =&~ 2\Dtv{\bbP^{\pibar}}{\bbP^{\pistar}} + 2\vepsstat.  
+  \end{align*}
+\end{proof}
+
+For the \cref{prop:tv-misspecified} to hold for general $f$-divergences, we need (1) a general version of the triangle inequality to isolate the misspecification term in the first step; (2) a concentration inequality from $\wh\En$ to $\En_{\pistar}$ that holds for all $g \in \cG$, which means that $\cG$ must be bounded; and (3) possibly symmetry of the discriminator set. These properties should be satisfied by the Hellinger distance and triangular discrimination, in addition to TV.   
+
+\paragraph{Questions}
+\begin{itemize}
+  \item \textbf{Imitation learning (known dynamis):} What objective should we use for the triangular discrimination metric to get a fast rate? What happens when you try to use Hellinger directly? 
+  %%
+  \item \textbf{Imitation learning (unknown dynamics):} The objective in \cref{eq:tv-objective} requires known dynamics. How many queries to the model are required if the dynamics are not known? Can we lower bound the number of queries?  
+  %%
+  \item \textbf{Distribution learning:} 
+  For the analysis in \cref{prop:tv-misspecified} to go through, we need the divergence to be symmetric and bounded. Can either of these be relaxed to extend this result to general $f$-divergences? 
+  %%
+  \item \textbf{Online imitation learning:} What questions can we generate in this settting? 
+\end{itemize}
+
+

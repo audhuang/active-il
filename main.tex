@@ -1,0 +1,365 @@
+% \documentclass[11pt]{article}
+\documentclass{article}
+
+
+\usepackage{etoolbox}
+% \usepackage{comment}
+\newtoggle{neurips}
+%\toggletrue{neurips}
+\togglefalse{neurips}
+\newcommand{\neurips}[1]{\iftoggle{neurips}{#1}{}}
+\newcommand{\arxiv}[1]{\iftoggle{neurips}{}{#1}}
+\newcommand{\loose}{\looseness=-1}
+
+\neurips{
+  \PassOptionsToPackage{numbers, compress, square}{natbib}
+  \usepackage[]{neurips_2024}
+  \usepackage[numbers]{natbib}
+  \bibliographystyle{abbrvnat}
+  % \bibliographystyle{plainnat}
+}
+
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+%\usepackage{hyperref}       % hyperlinks 
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+
+\usepackage{tocloft}            % TOC spacing
+
+%\usepackage{txfont}
+
+\usepackage[shortlabels]{enumitem}
+\neurips{
+\setlist[enumerate]{leftmargin=*}
+\setlist[itemize]{leftmargin=*}
+}
+
+\usepackage{breakcites}
+\usepackage[normalem]{ulem}
+
+% \mathscr
+\usepackage{mathrsfs}
+
+\usepackage{algorithm}
+\usepackage{verbatim}
+\usepackage[noend]{algpseudocode}
+\newcommand{\multiline}[1]{\parbox[t]{\dimexpr\linewidth-\algorithmicindent}{#1}}
+
+\usepackage{multicol}
+
+\usepackage{colortbl}
+
+\usepackage{setspace}
+
+\usepackage{transparent}
+
+\usepackage{inconsolata}
+\usepackage[scaled=.90]{helvet}
+%\usepackage{fontspec}
+% \usepackage{helvet}
+\usepackage{xspace}
+
+\usepackage{pifont}
+%\newcommand{\cmark}{\ding{51}}%
+%\newcommand{\xmark}{\ding{55}}%
+\usepackage{bm}
+\newcommand{\x}{\bm{x}}
+
+% REMOVE THIS AT SOME POINT
+% \hbadness = 1331
+\hbadness = 10000
+
+
+% \usepackage{eufrak}
+% \usepackage{fontspec,unicode-math}
+% \setmathfont[range=\mathfrak]{Old English Text MT}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Better looking lowercase mathfrak
+% https://tex.stackexchange.com/questions/398710/alternative-separate-font-to-mathfrak-for-small-letters
+
+\DeclareFontFamily{U}{jkpmia}{}
+\DeclareFontShape{U}{jkpmia}{m}{it}{<->s*jkpmia}{}
+\DeclareFontShape{U}{jkpmia}{bx}{it}{<->s*jkpbmia}{}
+\DeclareMathAlphabet{\mathfrak}{U}{jkpmia}{m}{it}
+\SetMathAlphabet{\mathfrak}{bold}{U}{jkpmia}{bx}{it}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{./txie}
+\input{arxiv_style}
+\input{dylan}
+\input{macros}
+\let\underbar\undefined
+\input{widebar}
+
+% Right order is amsmath -> hyperref -> cleveref -> autonum.
+% \usepackage{autonum} % incompatible with thm-restate. use
+% showonlyrefs w/ mathtools instead
+
+
+\usepackage{color-edits}
+% \usepackage[suppress]{color-edits}
+ \addauthor{df}{ForestGreen}
+\newcommand{\dfc}[1]{\dfcomment{#1}}
+\addauthor{ak}{orange}
+\newcommand{\akc}[1]{\akcomment{#1}}
+\addauthor{ws}{red}
+
+\addauthor{ah}{RosyBrown}
+  \newcommand{\ah}[1]{\ahcomment{#1}}
+\newcommand{\todo}[1]{\textcolor{Tomato}{[\textbf{TODO:} {#1}]}}
+
+  % Indent option for \Statex
+\makeatletter
+\let\OldStatex\Statex
+\renewcommand{\Statex}[1][3]{%
+  \setlength\@tempdima{\algorithmicindent}%
+  \OldStatex\hskip\dimexpr#1\@tempdima\relax}
+\makeatother
+
+% \let\vec\undefined
+ \usepackage{accents}
+ \newcommand{\ubar}[1]{\underaccent{\bar}{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\let\oldparagraph\paragraph
+\newcommand{\paragraphi}[1]{\oldparagraph{\emph{#1}.}}
+\renewcommand{\paragraph}[1]{\oldparagraph{#1.}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\meet}{\wedge} 
+\newcommand{\nn}{\nonumber}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\allowdisplaybreaks
+
+\arxiv{                      
+\title{Active Imitation Learning (+ other IL ideas)}
+}
+
+\author{}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\section{Deterministic expert}
+
+\subsection{Setup} 
+
+% deterministic 
+Let $\Pi$ be a given deterministic policy class. Denote by $\PiRNS$ the set of randomized nonstationary Markovian policies, and 
+by $\PiRNM$ the set of randomized non-Markovian policies. 
+
+For a fixed $\pihat$, define $\Pi_\veps(\pihat) \ldef{} \cbr{\pi\in\Pi : \rho(\pi,\pihat) \ge \veps}$ to be the set of policies from $\Pi$ that disagree with $\pihat$ with probability at least $\veps$.  
+Our objective is to find for another policy class $\wt\Pi$ 
+\begin{align}
+  \label{eq:objective-pihat}
+    \sup_{p \in \wt\Pi}{} \cL(p) 
+    \ldef{} 
+    \inf_{\pi\in\Pi_\veps(\pihat)}{}\bbP^p\sbr*{\exists h : \pi(x_h) \neq \pihat(x_h)}.
+\end{align}
+
+The class $\wt\Pi$ may be $\Pi,\PiRNS, \PiRNM$, in order of increasing generality. 
+Let $\tau = \{x_1,a_1,\ldots,x_H, a_H, x_{H+1}\}$ denote a trajectory. 
+
+
+\subsection{Mirror descent (trajectories)} 
+Let $\cP = \cbr*{\bbP^\pi : \pi\in\wt\Pi}$ be the set of admissible laws of trajectories induced by rolling $\pi\in\wt\Pi$ out in the MDP. We can equivalently consider the problem in \cref{eq:objective-pihat} as 
+\begin{align*}
+  \sup_{p\in\cP} \cL(p) = \inf_{\pi\in\Pi_\veps(\pihat)} \sum_\tau p(\tau) \cdot \bbI\sbr*{\exists h : \pi(x_h)\neq \pihat(x_h)}.
+\end{align*} 
+If $\wt\Pi$ is a convex set in policy space, then $\cP$ is also a convex set in trajectory space. 
+
+For a fixed $p$, define $\pi_p \ldef{} \min_{\pi\in\Pi} \bbP^p\sbr*{\exists h : \pi(x_h) \neq \pihat(x_h)}$. 
+The derivative is 
+\begin{align*}
+  \frac{\partial \cL(p)}{\partial p(\tau)} = \bbI\sbr*{\exists h : \pi_p(x_h) \neq \pihat(x_h)}. 
+\end{align*}
+From this it can be observed that $\sup_{p\in\cP}\|\nabla\cL(p)\|_\infty \le 1$. 
+
+\paragraph{Procedure} 
+The mirror descent procedure is as follows. We abbreviate $\bbP\ind{t} \equiv \bbP^{p\ind{t}}$; similarly, the best-response policy with respect to $p\ind{t}$ is $\pi\ind{t} \equiv \pi_{p\ind{t}}$.  
+Initialize $p\ind{1}$, a law over trajectories. Then for $t = 1,\ldots,T$: 
+\begin{enumerate}
+  \item Obtain the best-response policy w.r.t the current $p\ind{t}$,
+  \begin{align*}
+    \pi\ind{t} = \argmin_{\pi\in\Pi_\veps(\pihat)}{}\bbP\ind{t}\sbr*{\exists h : \pi(x_h) \neq \pihat(x_h)}.
+  \end{align*}
+  %%
+  \item Solve the mirror descent update 
+  \begin{align}
+  \label{eq:md-update}
+    p\ind{t+1} = \argmin_{p \in \cP}{} \bbP^p\sbr*{\exists h : \wt\pi\ind{t}(x_h) \neq \pihat(x_h)} - \beta \Dkl{p}{p\ind{t}}. 
+  \end{align}
+\end{enumerate}
+
+\paragraph{Analysis}
+Let $\pstar$ be such that $\cL(\pstar) = \sup_{p \in \cP} \cL(p)$. The mirror descent guarantee states that  
+\begin{align*}
+  \sum_t \cL(\pstar) - \sum_t \cL(p^t) 
+  \le&~ 
+  \frac{\Dkl{\pstar}{p\ind{1}}}{\beta} + \frac{\beta}{2} \sum_t \nrm{\nabla \cL(p\ind{t})}_\infty^2
+  \\
+  \le&~ \frac{\log\prn*{1+\Dchis{\pstar}{p\ind{1}}}}{\beta} + \frac{T\beta}{2} 
+\end{align*}
+Choosing $\beta = \sqrt{\frac{2\log(1+\Dchis{\pstar}{p\ind{1}})}{T}}$,  
+\begin{align*}
+  \sum_t \cL(\pstar) - \sum_t \cL(p^t) 
+  \le&~ 
+  \sqrt{2\log\prn*{1+\Dchis{\pstar}{p\ind{1}}}T}. 
+\end{align*}
+Put another way, there exists $t \in [T]$ such that 
+\begin{align*}
+  \cL(\pstar) - \cL(p^t) 
+  \le&~ 
+  \sqrt{\frac{2\log\prn*{1+\Dchis{\pstar}{p\ind{1}}}}{T}}. 
+\end{align*}
+This pays for log-coverability of $\pstar$ over $p\ind{1}$. However, we cannot actually solve for the update in \cref{eq:md-update} without constructing $\cP$.   
+
+
+
+\subsection{DPOing the policy update} 
+Consider again the trajectory-level formulation. 
+To make the DPO substitution, we first need to recover the maximizer to each MD update. 
+Suppose $p\ind{t}$ is fixed and admissible, in the sense that $p\ind{t} = \bbP^{\wt\pi\ind{t}}$ for some (possibly non-Markovian) policy $\wt\pi\ind{t}$. 
+Let 
+\begin{align}
+  \label{eq:unconstrained-md-update}
+  p\ind{t+1}_\star 
+  = 
+  \sup_{p\in\Delta(\tau)}{} \cbr*{\bbP^p\sbr*{\exists h : \pi\ind{t}(x_h) \neq \pihat(x_h)}
+  - \beta\Dkl{p}{p\ind{t}}}. 
+\end{align}
+For each $\tau$, this takes the closed form 
+\begin{align*}
+  \bbI\sbr*{\exists h : \pi\ind{t}(x_h) \neq \pihat(x_h)}
+  =&~ 
+  \beta\log\rbr*{\frac{p\ind{t+1}_\star(\tau)}{p\ind{t}(\tau)}} + Z
+  \\
+  =&~ 
+  \beta\log\rbr*{\frac{\wt\pi_\star\ind{t+1}(a_{1:H}\mid{}x_{1:H})}{\wt\pi\ind{t}(a_{1:H}\mid{}x_{1:H})}} + Z,
+\end{align*}
+where $\wt\pi_\star\ind{t+1}$ is the policy that induces $p\ind{t+1}_\star$, i.e., $p\ind{t+1}_\star = \bbP^{\wt\pi_\star\ind{t+1}}$. 
+\todo{Needs to be more exact. Does $\wt\pi\ind{t+1}_\star$ always exist, e.g., by factoring out the transition probabilities? }
+
+With this substitution, we can consider the following alternative procedure. Given a policy class $\Pi_{\dpo}$, data in the form of pairs of trajectories drawn as $(\tau,\tau')\sim \piref$, and initial policy $\wt\pi\ind{1}$, 
+\begin{enumerate}
+  \item Obtain the best-response policy w.r.t the current $\wt\pi\ind{t}$,
+  \begin{align*}
+    \pi\ind{t} = \argmin_{\pi\in\Pi_\veps(\pihat)}{}\bbP^{\wt\pi\ind{t}}\sbr*{\exists h : \pi(x_h) \neq \pihat(x_h)}.
+  \end{align*}
+  %%
+  \item Let $g\ind{t}(\tau) \ldef{} \bbI\sbr*{\exists h : \pi\ind{t}(x_h) \neq \pihat(x_h)}$. Solve the DPO update 
+  \begin{align}
+  \label{eq:dpo-update}
+    \wt\pi\ind{t+1} = \argmin_{\wt\pi \in \Pi_{\dpo}}{} \En_{\tau,\tau' \sim \piref}\sbr*{\rbr*{g\ind{t}(\tau) - g\ind{t}(\tau') - \beta\log\rbr*{\frac{\wt\pi(a_{1:H}\mid{}x_{1:H})}{\wt\pi\ind{t}(a_{1:H}\mid{}x_{1:H})}} +  \beta\log\rbr*{\frac{\wt\pi(a'_{1:H}\mid{}x'_{1:H})}{\wt\pi\ind{t}(a'_{1:H}\mid{}x'_{1:H})}}}^2}
+  \end{align}
+\end{enumerate}
+
+\begin{assumption}[Policy completeness]
+  Given $\beta$, for any $\pi \in \Pi_{\dpo}$ and trajectory-level reward function $g \in \cbr*{g^\pi(\tau) = \bbI\sbr*{\exists h : \pi(x_h) \neq \pihat(x_h)} : \pi\in\Pi}$, there exists $\pi'\in\Pi_{\dpo}$ such that 
+  \begin{align*}
+    g(\tau) = \beta\log\rbr*{\frac{\pi'(a_{1:H}\mid{}x_{1:H})}{\pi(a_{1:H}\mid{}x_{1:H})}} + Z,~\forall \tau. 
+  \end{align*}
+\end{assumption}
+
+\paragraph{Sketch}
+\begin{itemize}
+  \item The update in \cref{eq:dpo-update} approximately solves \cref{eq:unconstrained-md-update}, and pays for all-policy coverage over $\piref$ 
+  \item \todo{Mirror descent guarantee involves $\pstar$ computed from what policy class? What kind of policy class is $\Pi_{\dpo}$?} 
+\end{itemize}
+
+\subsection{Mirror descent (history-dependent policies)} 
+Here we consider mirror descent in (possibly history-dependent) policy space. Let $\wt{x}_h = \{x_1,a_1,\ldots,x_{h-1},a_{h-1},x_h\}$ be the history up until time $h$. Now $p \in \wt\Pi$ maps $\wt{x}_h \rightarrow \Delta(\cA)$
+First we calculate the gradient for a fixed $p$.  
+\begin{align*}
+  \frac{\partial \cL(p)}{\partial p(a_h|\wt{x}_h)}  = \bbP^p(\wt{x}_h) \cdot \bbP^p\sbr*{\exists h : \pi_p(x_h) \neq \pihat(x_h) \mid{} \wt{x}_h,a_h}. 
+\end{align*}
+
+
+
+%First, for a given $p$, define 
+%\begin{align*}
+%  \wt\pi_p = \inf_{\pi\in\Pi_\veps(\pihat)}{} \bbP^p\sbr*{\exists h : \pi(x_h) \neq \pihat(x_h)}.
+%\end{align*}
+%
+%Then the gradient of $\cL$ with respect to $p$ at $\tau$ is  
+%\todo{this is wrong} 
+%\begin{align*}
+%  \tfrac{\partial}{\partial p(\tau)} \cL(p) 
+%%  =&~ \tfrac{\partial}{\partial p(\tau)} \bbP^p
+%  = 
+%  \bbI\sbr*{\exists h: \wt\pi_p(x_h) \neq \pihat(x_h)}. 
+%\end{align*}
+
+\paragraph{Procedure} 
+The mirror descent procedure is as follows. 
+Initialize $p\ind{1}$. Then for $t = 1,\ldots,T$: 
+\begin{enumerate}
+  \item Obtain the best-response policy w.r.t the current $p\ind{t}$,
+  \begin{align*}
+    \pi\ind{t} = \argmin_{\pi\in\Pi_\veps(\pihat)}{}\bbP\ind{t}\sbr*{\exists h : \pi(x_h) \neq \pihat(x_h)}.
+  \end{align*}
+  %%
+  \item Compute the surrogate value function 
+  \begin{align*}
+    Q\ind{t}(\wt{x}_h, a_h) 
+    = 
+    \bbP\ind{t}\sbr*{\exists h : \pi\ind{t}(x_h) \neq \pihat(x_h)\mid{}\wt{x}_h,a_h}.
+  \end{align*}
+  %%
+  \item Solve the mirror descent update 
+  \begin{align*}
+    p\ind{t+1} 
+    = 
+    \sup_{p\in\wt\Pi}{} \sum_h \En^{p\ind{t}}\sbr*{Q\ind{t}(\wt{x}_h,p(\wt{x}_h))}
+    - \beta \underbrace{\Dkl{\bbP^p}{\bbP\ind{t}}}_{={} \En^p\sbr*{\sum_h \Dkl{p(\wt{x}_h)}{p\ind{t}(\wt{x}_h)}}}
+    % - \beta \En^p\sbr*{\sum_h \Dkl{p(\wt{x}_h)}{p\ind{t}(\wt{x}_h)}}. 
+  \end{align*}
+  % \item Solve the mirror descent update 
+  % \begin{align}
+  % \label{eq:md-update}
+  %   p\ind{t+1} = \argmin_{p \in \Delta(\PiRNS)}{} \bbP^p\sbr*{\exists h : \wt\pi\ind{t}(x_h) \neq \pihat(x_h)} - \beta \Dkl{p}{p\ind{t}}. 
+  % \end{align}
+\end{enumerate}
+
+\paragraph{Analysis} 
+\todo{Conjugate norm?}
+The regularization term is strongly convex with respect to $p(a_h|\wt{x}_h)$ in the $\|\cdot\|_{1,d^p(\wt{x}_h)}$ norm...? But there is a mismatch between distributions over which expectations are taken in the two terms. 
+
+
+
+%\section{Stochastic expert}
+
+\newpage 
+
+\input{misspecification.tex}
+
+% \clearpage
+
+% \bibliography{refs}
+
+
+\end{document}
+
+
