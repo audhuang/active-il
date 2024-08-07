@@ -1,0 +1,69 @@
+Dropping context dependence for simplicity, for each $t$ the objective is to solve 
+\begin{align}\label{eq:md-sharpening}
+    \Phi\ind{t}(\pi) = \En_\pi\sbr*{\log\pi\ind{1}(a)} - \beta\Dkl{\pi}{\pi\ind{t}}.
+\end{align}
+
+Given data collected from a data collection policy $\mu\ind{t}$, the \dpo-style update is 
+\begin{align}\label{eq:dpo-sharpening}
+    \cL\ind{t}(\pi) = \En_{\mu}\sbr*{\rbr*{\log\pi\ind{1}(a) - \log\pi\ind{1}(b) - \beta\log\frac{\pi(a)}{\pi\ind{t}(a)} + \beta\log\frac{\pi(b)}{\pi\ind{t}(b)} }^2}. 
+\end{align}
+
+Our goal is to derive the number of samples for $\max_{\pi\in\Pi}\Phi\ind{t}(\pi) - \Phi\ind{t}(\pihat) \le \veps$, where $\pihat = \max_{\pi\in\Pi}\wh{\cL}\ind{t}(\pi)$.
+
+\begin{lemma}
+    \label{lem:dpo-decomposition}
+    For any comparator policy $\pi$, 
+    \begin{align*}
+        \Phi\ind{t}(\pi) - \Phi\ind{t}(\pihat) 
+        \le&~ 
+        \En_{a\sim\pi,b\sim\pihat}\sbr*{\log\pi\ind{1}(a) - \log\pi\ind{1}(b) - \beta\log\rbr*{\frac{\pihat(a)}{\pi\ind{t}(a)}} + \beta\log\rbr*{\frac{\pihat(b)}{\pi\ind{t}(b)}}}.
+    \end{align*}
+\end{lemma}
+
+\paragraph{Sketch} Suppose we collect data with $\pi\ind{t}$ (another more advanced option is $\pi\ind{1}$). Then we expect that, roughly,  
+\begin{align*}
+    \Phi\ind{t}(\pi\indstar{t+1}) - \Phi\ind{t}(\pihat) 
+    \lesssim&~ 
+    \nbr*{\frac{\pi\indstar{t+1}}{\pi\ind{t}}}_\infty \cdot \nbr*{\frac{\pihat}{\pi\ind{t}}}_\infty \cdot \vepsstat, 
+\end{align*} 
+where $\vepsstat^2 = \En_{(a,b)\sim\pi\ind{t}}\sbr*{\rbr*{\log\pi\ind{1}(a) - \log\pi\ind{1}(b) - \beta\log\rbr*{\frac{\pihat(a)}{\pi\ind{t}(a)}} + \beta\log\rbr*{\frac{\pihat(b)}{\pi\ind{t}(b)}}}^2}$. 
+
+\todo{
+    \begin{itemize}
+        \item \textbf{Concentrability of $\pi\indstar{t+1}$:} Need to check bound on $\frac{\pi\indstar{t+1}}{\pi\ind{t}}$ given $\Rmax \in (\infty, 0]$, or at least something very small as the lower limit.  
+        \item \textbf{Concentrability of $\pihat$:} This is all-policy. How to control?  
+        \item \textbf{Dependence on ``reward range'':} May need $\abs*{\log\frac{\pi\ind{1}(a)}{\pi\ind{1}(b)}} \le C$ for all pairs of actions $(a,b)$, is there something more refined? Clipping if we're willing to throw away actions with very low probability?   
+    \end{itemize}
+}
+
+\begin{proof}[\pfref{lem:dpo-decomposition}]
+    For a reward function $r$ define $\Phi_{r}\ind{t}(\pi) \ldef{} \En_\pi\sbr*{r(a)} - \beta\Dkl{\pi}{\pi\ind{t}}$, and let $\rhat = \beta\log\rbr*{\frac{\pihat}{\pi\ind{t}}}$.  
+    Since $\Phi_{\rhat}(\pihat) = 0$, we have $\beta\Dkl{\pihat}{\pi\ind{t}} = \En_{\pihat}\sbr{\rhat}$. 
+    
+    Further, from Lemma E.2 of our paper, we know that $\pihat = \argmax_{\pi \in\Delta(\cA)} \En_\pi\sbr*{\rhat} - \beta\Dkl{\pi}{\pi\ind{t}}$. Since $\Phi_{\rhat}(\pi) \le \Phi_{\rhat}(\pihat) = 0$, we observe that $-\beta\Dkl{\pi}{\pi\ind{t}} \le -\En_\pi\sbr{\rhat}$. 
+
+    Decomposing the error and using the above inequalities, we obtain 
+    \begin{align*}
+        \Phi\ind{t}(\pi) - \Phi\ind{t}(\pihat)
+        =&~ 
+        \En_\pi\sbr*{\log\pi\ind{1}(a)} - \beta\Dkl{\pi}{\pi\ind{t}} - \En_{\pihat}\sbr*{\log\pi\ind{1}(a)} + \beta \Dkl{\pihat}{\pi\ind{t}}
+        \\
+        \le&~ 
+        \En_\pi\sbr*{\log\pi\ind{1}(a) - \rhat(a)} - \En_{\pihat}\sbr*{\log\pi\ind{1}(a) - \rhat(a)}
+        \\
+        =&~ 
+        \En_{a\sim\pi,b\sim\pihat}\sbr*{\log\pi\ind{1}(a) - \log\pi\ind{1}(b) - \beta\log\rbr*{\frac{\pihat(a)}{\pi\ind{t}(a)}} + \beta\log\rbr*{\frac{\pihat(b)}{\pi\ind{t}(b)}}}.  
+    \end{align*}  
+
+
+    % Now define the optimal policy for \cref{eq:md-sharpening} to be $\pi\indstar{t+1}_{\beta} \ldef{} \argmax_{\pi \in \Delta(\cA)} \Phi\ind{t}(\pi)$, and 
+    % \begin{align*}
+    %     \pi\indstar{t+1}_\beta(a) \propto \pi\ind{t}(a) \cdot \exp\rbr*{\frac{\log\pi\ind{1}(a)}{\beta}},
+    % \end{align*}
+    % alternatively, 
+    % \begin{align*}
+    %     \log\pi\ind{1}(a) = \beta \log\frac{\pi\indstar{t+1}_\beta(a)}{\pi\ind{t}(a)} + Z. 
+    % \end{align*}
+
+    
+\end{proof}

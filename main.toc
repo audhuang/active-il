@@ -8,8 +8,10 @@
 \contentsline {subsection}{\numberline {1.4}Mirror descent (history-dependent policies)}{3}{subsection.18}%
 \contentsline {paragraph}{Procedure.}{3}{section*.19}%
 \contentsline {paragraph}{Analysis.}{3}{section*.23}%
-\contentsline {section}{\numberline {2}Misspecification}{4}{section.24}%
-\contentsline {subsection}{\numberline {2.1}Insufficiency of log loss}{4}{subsection.25}%
-\contentsline {subsection}{\numberline {2.2}Misspecification in Hellinger distance for deterministic experts}{4}{subsection.26}%
-\contentsline {subsection}{\numberline {2.3}Stochastic experts, starting point: Scheffe with TV distance}{4}{subsection.27}%
-\contentsline {paragraph}{Questions.}{5}{section*.31}%
+\contentsline {section}{\numberline {2}DPO in sharpening}{4}{section.24}%
+\contentsline {paragraph}{Sketch.}{4}{section*.29}%
+\contentsline {section}{\numberline {3}Misspecification}{5}{section.30}%
+\contentsline {subsection}{\numberline {3.1}Insufficiency of log loss}{5}{subsection.31}%
+\contentsline {subsection}{\numberline {3.2}Misspecification in Hellinger distance for deterministic experts}{5}{subsection.32}%
+\contentsline {subsection}{\numberline {3.3}Stochastic experts, starting point: Scheffe with TV distance}{5}{subsection.33}%
+\contentsline {paragraph}{Questions.}{6}{section*.37}%
